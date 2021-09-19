@@ -1,5 +1,5 @@
-# Direct genome-wide identification of G-quadruplex structures by whole-genome resequencing
-## G4-miner
+# G4-miner
+
 G4-miner is a genome-wide approach to directly identify G4 structures from standard sequencing data. G4-miner inspects sequencing quality in the whole genome, seizes unexpected fluctuations in local, and ascribes some of the quality fluctuations to the unstable formation of G4.
 
 
