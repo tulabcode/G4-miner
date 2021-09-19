@@ -3,6 +3,7 @@
 G4-miner is a genome-wide approach to directly identify G4 structures from standard sequencing data. G4-miner inspects sequencing quality in the whole genome, seizes unexpected fluctuations in local, and ascribes some of the quality fluctuations to the unstable formation of G4.
 
 
+
 ## Installation
 Using Git:
 ```shell
@@ -10,8 +11,10 @@ git clone https://github.com/tulabcode/G4-miner
 ```
 
 
+
 ## Prerequisities
 G4-miner is implemented in perl and shell, a command line software.
+
 Required:
 1. Linux system
 2. [g4predict](https://github.com/mparker2/g4predict), install it following the installtion before run G4-miner.
