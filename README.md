@@ -102,16 +102,27 @@ This project provides a case analysis of the species **Saccharomyces cerevisiae*
 In the output directory, each chromosome generated a corresponding experimental result folder. According to the experimental results of each chromosome, this tool counted the number of all positive regions, negative regions and false-positive regions, and calculated the number of regions that meet the conditions of different M and N parameters and found the parameter values corresponding to the most representative low-quality regions. In addition, this tool also distinguished between forward and reverse strand. The suffix with ‘f’ corresponds to the forward strand, and the suffix with ‘r’ corresponds to the reverse strand.
 
 In each chromosome directory, the forward and reverse strand respectively generated 11 result files, and each file contained the following content:
+
 **<Median.gz>**: The median of the quality value corresponding to each base on the chromosome
+
 **<PQ_g4predict>**: The PQ file on the whole genome predicted by G4predict, named "PQ_g4predict_minus" on the forward strand, and "PQ_g4predict_plus" on the reverse strand
+
 **<positive_array>**: The number of positive regions corresponding to different M and N parameter conditions
+
 **<negative_sloci.gz>**: Position information of the negative region corresponding to different M and N parameter conditions
+
 **<false_positive_sloci.gz>**: Position information of the false-positive region corresponding to different M and N parameter conditions
+
 **<negative_array>**: The number of negative regions corresponding to different M and N parameter conditions.
+
 **<false_positive_array>**: The number of false-positive regions corresponding to different M and N parameter conditions.
+
 **<OQ.gz>**: Low-quality region sequence collection, that is, the observed quadruplex (OQ), there is overlap between the sequences
+
 **<G4_OQ_unmerged>**: A collection of sequences related to the G-quadruplex with overlap screened by the characteristics of the sequence
+
 **<G4_OQ_merged>**: A collection of sequences related to the G-quadruplex without overlap screened by the characteristics of the sequence
+
 **<G4_PQinOQ>**: PQ set included by OQ
 
 
