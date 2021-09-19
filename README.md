@@ -47,7 +47,8 @@ Options:
                 -g4 <file> <the absolute path of g4predict> (default: `which g4predict`)
                 -rl <int> <the longest length of reads, default = 150 nt>
                 -dl <int> <the length of detection region, defalut = 75 nt>
-                -sp <float> <Specie for selecting cutoff of G ratio, here have six species:                              human/mouse/fruitfly/thaliana/elegans/yeast,
+                -sp <float> <Specie for selecting cutoff of G ratio, here have six species:
+                             human/mouse/fruitfly/thaliana/elegans/yeast,
                              default: human with 0.28, if the specie did not include in this
                              paper, can calculate by one more step>
                 -n <string> <the name of the sample>
