@@ -1,10 +1,14 @@
-# G4-miner
-### Direct genome-wide identification of G-quadruplex structures by whole-genome resequencing
+# Direct genome-wide identification of G-quadruplex structures by whole-genome resequencing
+## G4-miner
 G4-miner is a genome-wide approach to directly identify G4 structures from standard sequencing data. G4-miner inspects sequencing quality in the whole genome, seizes unexpected fluctuations in local, and ascribes some of the quality fluctuations to the unstable formation of G4.
+
 
 ## Installation
 Using Git:
+```shell
 git clone https://github.com/tulabcode/G4-miner
+```
+
 
 ## Prerequisities
 G4-miner is implemented in perl and shell, a command line software.
@@ -15,13 +19,16 @@ Required:
 4. It is recommended to install in advance three perl moudles: Getopt::Long, File::Basename, File::Spec.
 5. python2,  recommended version 2.7.16
 
+
 ## Running G4-miner for predictting
 Follow the instructions:
 ```shell
 # enter the G4-miner directory
 cd path_to_G4-miner_directory
+
 # add rights to execute
 chmod +x G4-miner.pl
+
 # run G4-miner
 ./G4-Miner.pl or perl /path_to_G4-miner_directory/G4-miner.pl
 Usage:
@@ -50,22 +57,24 @@ The following table shows the corresponding G-ratio of different species:
 
 |           **Species**            | **G-ratio** |
 | :------------------------------: | :---------: |
-|       ***Homo  sapiens\***       |    0.28     |
-|       ***Mus  musculus\***       |    0.28     |
-| ***Drosophila  melanogaster\***  |    0.27     |
-|   ***Arabidopsis  Thaliana\***   |    0.24     |
-|  ***Caenorhabditis  elegans\***  |    0.25     |
-| ***Saccharomyces  cerevisiae\*** |    0.29     |
+|       **Homo  sapiens**      |    0.28     |
+|       **Mus  musculus**       |    0.28     |
+| **Drosophila  melanogaster**  |    0.27     |
+|   **Arabidopsis  Thaliana**   |    0.24     |
+|  **Caenorhabditis  elegans**  |    0.25     |
+| **Saccharomyces  cerevisiae** |    0.29     |
+
 
 ## Reference genomes and data sources
 |           **Species**           | **Reference genome source**                                  | **Data  source (SRR code)** |
 | :-----------------------------: | :----------------------------------------------------------- | :-------------------------: |
-|       ***Homo sapiens\***       | https://hgdownload.soe.ucsc.edu/goldenPath/hg19/             |         SRR9644818          |
-|       ***Mus musculus\***       | https://hgdownload.soe.ucsc.edu/goldenPath/mm10/             |         SRR13179566         |
-| ***Drosophila melanogaster\***  | https://hgdownload.soe.ucsc.edu/goldenPath/dm6/              |         SRR12822760         |
-|   ***Arabidopsis Thaliana\***   | https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/735/GCF_000001735.4_TAIR10.1/ |         SRR11608990         |
-|  ***Caenorhabditis elegans\***  | https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/002/985/GCF_000002985.6_WBcel235/ |         SRR8816429          |
-| ***Saccharomyces cerevisiae\*** | https://hgdownload.soe.ucsc.edu/goldenPath/sacCer3/          |         SRR13747318         |
+|       **Homo sapiens**       | https://hgdownload.soe.ucsc.edu/goldenPath/hg19/             |         SRR9644818          |
+|       **Mus musculus**       | https://hgdownload.soe.ucsc.edu/goldenPath/mm10/             |         SRR13179566         |
+| **Drosophila melanogaster**  | https://hgdownload.soe.ucsc.edu/goldenPath/dm6/              |         SRR12822760         |
+|   **Arabidopsis Thaliana**   | https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/735/GCF_000001735.4_TAIR10.1/ |         SRR11608990         |
+|  **Caenorhabditis elegans**  | https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/002/985/GCF_000002985.6_WBcel235/ |         SRR8816429          |
+| **Saccharomyces cerevisiae** | https://hgdownload.soe.ucsc.edu/goldenPath/sacCer3/          |         SRR13747318         |
+
 
 ## sacCer Test data
 ### Download
@@ -88,7 +97,7 @@ perl /path_to_G4-miner_directory/G4-miner.pl -i ~/work/sacCer/SRR13747318.sort.b
 ## here "~"" represents the personal home directory of Linux
 ```
 ### Result analysis
-This project provides a case analysis of the species ***Saccharomyces cerevisiae*** (*Yeast*), and the output results are shown in the folder "~/work/sacCer/G4-miner".
+This project provides a case analysis of the species **Saccharomyces cerevisiae** (*Yeast*), and the output results are shown in the folder "~/work/sacCer/G4-miner".
 
 In the output directory, each chromosome generated a corresponding experimental result folder. According to the experimental results of each chromosome, this tool counted the number of all positive regions, negative regions and false-positive regions, and calculated the number of regions that meet the conditions of different M and N parameters and found the parameter values corresponding to the most representative low-quality regions. In addition, this tool also distinguished between forward and reverse strand. The suffix with ‘f’ corresponds to the forward strand, and the suffix with ‘r’ corresponds to the reverse strand.
 
@@ -105,8 +114,10 @@ In each chromosome directory, the forward and reverse strand respectively genera
 **<G4_OQ_merged>**: A collection of sequences related to the G-quadruplex without overlap screened by the characteristics of the sequence
 **<G4_PQinOQ>**: PQ set included by OQ
 
+
 ## Contact information
 Jing Tu,  jtu@seu.edu.cn
+
 
 ## Citing G4-miner
 
