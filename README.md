@@ -135,4 +135,5 @@ Jing Tu,  jtu@seu.edu.cn
 
 
 ## Citing G4-miner
+Tu, J., Duan, M., Liu, W. et al. Direct genome-wide identification of G-quadruplex structures by whole-genome resequencing. Nat Commun 12, 6014 (2021). https://doi.org/10.1038/s41467-021-26312-w
 
