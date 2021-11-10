@@ -5,7 +5,7 @@ use Getopt::Long;
 my $red = "\033[0;31m";
 my $end = "\033[0m";
 
-my ($in, $out, $ca, $lo, $bu, $ot, $tt, $help);
+my ($in, $out, $ca, $lo, $bu, $ot, $tt, $stat, $help);
 GetOptions(
 	"i=s"=>\$in,
 	"o=s"=>\$out,
@@ -14,6 +14,7 @@ GetOptions(
 	"bu=s"=>\$bu,
 	"ot=s"=>\$ot,
 	"tt=s"=>\$tt,
+	"st=s"=>\$stat,
 	"help|?"=>\$help,
 );
 
@@ -28,8 +29,9 @@ Options:
 	-bu file,	${red}output of bulge_unmerged, if want enter the out.name$end
 	-ot file,	${red}output of others_unmerged, if want enter the out.name$end
 	-tt file,	${red}output of TwoTrcts_unmerged, if want enter the out.name$end
+	-st file,	${red}output of stat results, if want enter the out.name$end
 INFO
-die $usage if ($help || !$in);
+die $usage if ($help || !$in || !$stat);
 
 if($in =~ /\.gz$/)
 {
@@ -105,6 +107,12 @@ sub TwoTracts
 	return $T;
 }
 
+if($stat){
+	open ST, "> $stat" || die $!;
+}
+
+print ST "Canonical\tLong\tLulge\tTwoTracts\tOthers\n";
+
 my ($canonical, $long, $bulge, $twotracts, $others)=(0, 0, 0, 0, 0);
 while(<IN>)
 {
@@ -148,3 +156,7 @@ close TT if $tt;
 close Lo if $lo;
 close Bu if $bu;
 close Ot if $ot;
+
+print ST "$canonical\t$long\t$bulge\t$twotracts\t$others\n";
+
+close ST if $stat;
