@@ -121,8 +121,9 @@ while (<IF>)
 	my $chr;
 	my $out;
 	if ($_ =~ />(.*)/)
-	{
-		$chr = $1;
+	{	
+		my $firststring = (split /\s+/, $1)[0];
+		$chr = $firststring;
 		push(@chrs, $chr) if(!@chr);
 		$tag = 0;
 		$out = "$chr.fa";
