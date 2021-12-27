@@ -23,6 +23,8 @@ my $path3 = "$scriptpath/3.reverse";
 
 my ($in, $ref, @chr, $clean, $hdir, $read_length, $region_length, $specie, $samp, $py2, $G4Predict, $help);
 
+my ($inr, $inf);
+
 GetOptions
 (
 	"i|in=s"=>\$in,
@@ -36,6 +38,8 @@ GetOptions
 	"rl=i"=>\$read_length,
 	"dl=i"=>\$region_length,
 	"sp=s"=>\$specie,
+	"ir=s"=>\$inr,
+	"if=s"=>\$inf,
 	"help|?"=>\$help,
 );
 
@@ -44,6 +48,9 @@ Usage:
 	perl $0 [options]
 Options:
 		-i <file> <${red}input bam/sam file$end>
+		-ir <file> <${red}input reverse reads bam/sam file$end>
+		-if <file> <${red}input forward reads bam/sam file$end>
+			${red} -i | -ir -if must exists one $end
 		-d <path> <${red}the root directory for saving output$end>
 		-g <file> <${red}the fasta file of the whole genome reference$end>
 		-rm <int> <${red}rm the directory of \$hdir/\$samp, default: 1, yes$end>
@@ -57,7 +64,7 @@ Options:
 		-n <string> <${red}the name of the sample$end>
 INFO
 
-die $usage if ($help || !$in || !$hdir || !$samp || !$ref);
+die $usage if ($help || (!$in && (!$inr || !$inf)) || !$hdir || !$samp || !$ref);
 
 $read_length ||= 150;
 
@@ -70,7 +77,9 @@ if(!(defined($clean)))
 
 $specie ||= "human";
 
-die "${red}$in !exists\n" if(!(-e "$in"));
+die "${red}$in !exists\n" if(defined $in && !(-e "$in"));
+die "${red}$inr !exists\n" if(defined $inr && !(-e "$inr"));
+die "${red}$inf !exists\n" if(defined $inf && !(-e "$inf"));
 
 die "${red}$ref !exists\n" if(!(-e "$ref"));
 
@@ -152,11 +161,8 @@ while (<IF>)
 					{
 						`mkdir -p $odir/$chr` and die "${red}Error: can't create $odir/$chr$end\n";
 					}
-					if($clean)
-					{
-						open OUT, "> $odir/$chr/$out" || die $!;
-						print OUT "$_\n";
-					}
+					open OUT, "> $odir/$chr/$out" || die $!;
+					print OUT "$_\n";
 				}
 				else
 				{
@@ -171,10 +177,7 @@ while (<IF>)
 	}
 	else
 	{
-		if($clean)
-		{
-			print OUT "$_\n" if $tag;
-		}
+		print OUT "$_\n" if $tag;
 	}
 }
 close IF;
@@ -203,19 +206,25 @@ if(!(-e "$fai"))
 if($clean)
 {
 	print $red,"## Generate reverse and forward reads and save into dirrerent file$end\n";
-	$cmd = "perl $scriptpath/ForRev.pl -i $in -f $fai -or $odir/$samp.r.sort.bam -of $odir/$samp.f.sort.bam";
+	$cmd = "perl $scriptpath/ForRev.pl -i $in -f $fai -or $inr -of $inf";
 	print "\nNOTICE: Running with system command <$cmd>\n";
 	system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 
-
-	for my $chr(@chrs)
-	{
-		print $red,"## Predict G4 for each chromosome by using $G4Predict$end\n";
-		my $fa = "$odir/$chr/$chr.fa";
-		$cmd = "$py2 $G4Predict intra -f $fa -b $odir/$chr/PQ_g4predict.bed -s -M";
-		print "\nNOTICE: Running with system command <$cmd>\n";
-		system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
+	if(!(defined $inr)){
+		$inr = "$odir/$samp.r.sort.bam";
 	}
+	if(!(defined $inf)){
+		$inf = "$odir/$samp.f.sort.bam";
+	}
+}
+
+for my $chr(@chrs)
+{
+	print $red,"## Predict G4 for each chromosome by using $G4Predict$end\n";
+	my $fa = "$odir/$chr/$chr.fa";
+	$cmd = "$py2 $G4Predict intra -f $fa -b $odir/$chr/PQ_g4predict.bed -s -M";
+	print "\nNOTICE: Running with system command <$cmd>\n";
+	system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 }
 
 my $g;
@@ -363,102 +372,103 @@ sub PQ_Cratio
 
 my $tag_step = 0;
 
-if($clean)
-{
-	for my $chr(@chrs)
-	{	
-		$tag_step ++;
-		my $fa = "$odir/$chr/$chr.fa";
-		$cmd = "perl $path1/PQ_g4predict_seq.pl -i $odir/$chr/PQ_g4predict.bed -f $fa -o PQ_g4predict";
-		print "\nNOTICE: Running with system command <$cmd>\n";
-		system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
+#if($clean)
+#{
+for my $chr(@chrs)
+{	
+	$tag_step ++;
+	my $fa = "$odir/$chr/$chr.fa";
+	die $red,"$fa !exists\n" if(!(-e "$fa"));
+	$cmd = "perl $path1/PQ_g4predict_seq.pl -i $odir/$chr/PQ_g4predict.bed -f $fa -o PQ_g4predict";
+	print "\nNOTICE: Running with system command <$cmd>\n";
+	system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 
-		print $red,"## Count the median of the quality value of each base on $chr with $odir/$samp.r.sort.bam$end\n" if($tag_step == 1);
-		print $red,"## Start Analysis read mapped to reverse strand of genome$end\n" if($tag_step == 1);
-		$cmd = "perl $path1/Median.pl -i $odir/$samp.r.sort.bam -o $odir/$chr/Medianr.gz -l $read_length -ch $chr";
-		print "\nNOTICE: Running with system command <$cmd>\n";
-		system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
+	print $red,"## Count the median of the quality value of each base on $chr with $inr$end\n" if($tag_step == 1);
+	print $red,"## Start Analysis read mapped to reverse strand of genome$end\n" if($tag_step == 1);
+	$cmd = "perl $path1/Median.pl -i $inr -o $odir/$chr/Medianr.gz -l $read_length -ch $chr";
+	print "\nNOTICE: Running with system command <$cmd>\n";
+	system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 
-		$cmd = "perl $path2/Positive_region_median.pl -i $odir/$chr/PQ_g4predict_plus -m $odir/$chr/Medianr.gz -o $odir/$chr/positive_array_r -l $region_length";
-		print "\nNOTICE: Running with system command <$cmd>\n";
-		system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
+	$cmd = "perl $path2/Positive_region_median.pl -i $odir/$chr/PQ_g4predict_plus -m $odir/$chr/Medianr.gz -o $odir/$chr/positive_array_r -l $region_length";
+	print "\nNOTICE: Running with system command <$cmd>\n";
+	system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 
-		$cmd = "perl $path2/Negative_sloci.pl -i $odir/$chr/PQ_g4predict_plus -m $odir/$chr/Medianr.gz -o $odir/$chr/negative_sloci_r.gz -l $region_length";
-		print "\nNOTICE: Running with system command <$cmd>\n";
-		system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
+	$cmd = "perl $path2/Negative_sloci.pl -i $odir/$chr/PQ_g4predict_plus -m $odir/$chr/Medianr.gz -o $odir/$chr/negative_sloci_r.gz -l $region_length";
+	print "\nNOTICE: Running with system command <$cmd>\n";
+	system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 
-		$cmd = "perl $path2/Negative_seq_filter.pl -i $odir/$chr/negative_sloci_r.gz -f $fa -o $odir/$chr/false_positive_sloci_r.gz -c $g";
-		print "\nNOTICE: Running with system command <$cmd>\n";
-		system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
+	$cmd = "perl $path2/Negative_seq_filter.pl -i $odir/$chr/negative_sloci_r.gz -f $fa -o $odir/$chr/false_positive_sloci_r.gz -c $g";
+	print "\nNOTICE: Running with system command <$cmd>\n";
+	system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 
-		$cmd = "perl $path2/Negative_count.pl -i $odir/$chr/negative_sloci_r.gz -m $odir/$chr/Medianr.gz -o $odir/$chr/negative_array_r -l $region_length";
-		print "\nNOTICE: Running with system command <$cmd>\n";
-		system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
+	$cmd = "perl $path2/Negative_count.pl -i $odir/$chr/negative_sloci_r.gz -m $odir/$chr/Medianr.gz -o $odir/$chr/negative_array_r -l $region_length";
+	print "\nNOTICE: Running with system command <$cmd>\n";
+	system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 
-		$cmd = "perl $path2/Negative_count.pl -i $odir/$chr/false_positive_sloci_r.gz -m $odir/$chr/Medianr.gz -o $odir/$chr/false_positive_array_r -l $region_length";
-		print "\nNOTICE: Running with system command <$cmd>\n";
-		system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
+	$cmd = "perl $path2/Negative_count.pl -i $odir/$chr/false_positive_sloci_r.gz -m $odir/$chr/Medianr.gz -o $odir/$chr/false_positive_array_r -l $region_length";
+	print "\nNOTICE: Running with system command <$cmd>\n";
+	system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 
-		print $red,"## Count the median of the quality value of each base on $chr with $odir/$samp.f.sort.bam$end\n" if($tag_step == 1);
-		print $red,"## Start Analysis read mapped to forward strand of genome$end\n" if($tag_step == 1);
-		$cmd = "perl $path1/Median.pl -i $odir/$samp.f.sort.bam -o $odir/$chr/Medianf.gz -l $read_length -ch $chr";
-		print "\nNOTICE: Running with system command <$cmd>\n";
-		system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
+	print $red,"## Count the median of the quality value of each base on $chr with $inf$end\n" if($tag_step == 1);
+	print $red,"## Start Analysis read mapped to forward strand of genome$end\n" if($tag_step == 1);
+	$cmd = "perl $path1/Median.pl -i $inf -o $odir/$chr/Medianf.gz -l $read_length -ch $chr";
+	print "\nNOTICE: Running with system command <$cmd>\n";
+	system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 
-		$cmd = "perl $path3/Positive_region_median.pl -i $odir/$chr/PQ_g4predict_minus -m $odir/$chr/Medianf.gz -o $odir/$chr/positive_array_f -l $region_length";
-		print "\nNOTICE: Running with system command <$cmd>\n";
-		system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
+	$cmd = "perl $path3/Positive_region_median.pl -i $odir/$chr/PQ_g4predict_minus -m $odir/$chr/Medianf.gz -o $odir/$chr/positive_array_f -l $region_length";
+	print "\nNOTICE: Running with system command <$cmd>\n";
+	system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 
-		$cmd = "perl $path3/Negative_sloci.pl -i $odir/$chr/PQ_g4predict_minus -m $odir/$chr/Medianf.gz -o $odir/$chr/negative_sloci_f.gz -l $region_length";
-		print "\nNOTICE: Running with system command <$cmd>\n";
-		system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
+	$cmd = "perl $path3/Negative_sloci.pl -i $odir/$chr/PQ_g4predict_minus -m $odir/$chr/Medianf.gz -o $odir/$chr/negative_sloci_f.gz -l $region_length";
+	print "\nNOTICE: Running with system command <$cmd>\n";
+	system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 
-		$cmd = "perl $path3/Negative_seq_filter.pl -i $odir/$chr/negative_sloci_f.gz -f $fa -o $odir/$chr/false_positive_sloci_f.gz -c $c -l $region_length";
-		print "\nNOTICE: Running with system command <$cmd>\n";
-		system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
+	$cmd = "perl $path3/Negative_seq_filter.pl -i $odir/$chr/negative_sloci_f.gz -f $fa -o $odir/$chr/false_positive_sloci_f.gz -c $c -l $region_length";
+	print "\nNOTICE: Running with system command <$cmd>\n";
+	system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 
-		$cmd = "perl $path3/Negative_count.pl -i $odir/$chr/negative_sloci_f.gz -m $odir/$chr/Medianf.gz -o $odir/$chr/negative_array_f -l $region_length";
-		print "\nNOTICE: Running with system command <$cmd>\n";
-		system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
+	$cmd = "perl $path3/Negative_count.pl -i $odir/$chr/negative_sloci_f.gz -m $odir/$chr/Medianf.gz -o $odir/$chr/negative_array_f -l $region_length";
+	print "\nNOTICE: Running with system command <$cmd>\n";
+	system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 
-		$cmd = "perl $path3/Negative_count.pl -i $odir/$chr/false_positive_sloci_f.gz -m $odir/$chr/Medianf.gz -o $odir/$chr/false_positive_array_f -l $region_length";
-		print "\nNOTICE: Running with system command <$cmd>\n";
-		system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
-	}
+	$cmd = "perl $path3/Negative_count.pl -i $odir/$chr/false_positive_sloci_f.gz -m $odir/$chr/Medianf.gz -o $odir/$chr/false_positive_array_f -l $region_length";
+	print "\nNOTICE: Running with system command <$cmd>\n";
+	system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 }
+#}
 
-if($clean)
+#if($clean)
+#{
+for my $pre("false_positive_array", "positive_array", "negative_array")
 {
-	for my $pre("false_positive_array", "positive_array", "negative_array")
+	if(!@chrs)
 	{
-		if(!@chrs)
+		$cmd = "perl $path2/array_merged.pl -i ${pre}_r -g $ref -d $odir";
+		print "\nNOTICE: Running with system command <$cmd>\n";
+		system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
+
+		$cmd = "perl $path3/array_merged.pl -i ${pre}_f -g $ref -d $odir";
+		print "\nNOTICE: Running with system command <$cmd>\n";
+		system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
+	}
+	else
+	{
+		my $chrs_used;
+		for my $i(@chrs)
 		{
-			$cmd = "perl $path2/array_merged.pl -i ${pre}_r -g $ref -d $odir";
-			print "\nNOTICE: Running with system command <$cmd>\n";
-			system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
-
-			$cmd = "perl $path3/array_merged.pl -i ${pre}_f -g $ref -d $odir";
-			print "\nNOTICE: Running with system command <$cmd>\n";
-			system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
+			$chrs_used .= (!$chrs_used) ? "$i" : ",$i";
 		}
-		else
-		{
-			my $chrs_used;
-			for my $i(@chrs)
-			{
-				$chrs_used .= (!$chrs_used) ? "$i" : ",$i";
-			}
 
-			$cmd = "perl $path2/array_merged.pl -i ${pre}_r -cs $chrs_used -d $odir";
-			print "\nNOTICE: Running with system command <$cmd>\n";
-			system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
+		$cmd = "perl $path2/array_merged.pl -i ${pre}_r -cs $chrs_used -d $odir";
+		print "\nNOTICE: Running with system command <$cmd>\n";
+		system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 
-			$cmd = "perl $path3/array_merged.pl -i ${pre}_f -cs $chrs_used -d $odir";
-			print "\nNOTICE: Running with system command <$cmd>\n";
-			system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
-		}
+		$cmd = "perl $path3/array_merged.pl -i ${pre}_f -cs $chrs_used -d $odir";
+		print "\nNOTICE: Running with system command <$cmd>\n";
+		system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 	}
 }
+#}
 
 my $gzr;
 my $gzf;

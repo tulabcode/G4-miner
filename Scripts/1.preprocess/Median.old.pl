@@ -166,7 +166,7 @@ my $median_value = 0;
 while(<IN>)
 {
 	chomp;
-	my @temp = split /\t/, $_;
+	my @temp=split/\s+/, $_;
 	next if($temp[2] ne $chr);
 	$gap = $temp[3] - $aloci;
 	if($aloci != 0 and $gap != 0)
@@ -174,23 +174,15 @@ while(<IN>)
 		#progress of median finding
 		for(my $i = 1; $i <= $gap; $i ++)
 		{
-			if($Median[0]->[0]){
-				@median = &Out_Queue(@Median);
-				shift @Median;
-				@median = sort{ $a<=>$b } @median;
-				$median_value = &Find_Median(@median);
-				my $print_loci = $aloci + $i - 1;
-				print OUT "$print_loci\t$median_value\n";
-				@median = ();
-				$Median[$len-1] = [];
-			}
-			else{
-				shift @Median;
-				@median = ();
-				$Median[$len-1] = [];
-			}
-
-			last if(!$Median[0]->[0]);
+			last if !$Median[0]->[0];
+			@median = &Out_Queue(@Median);
+			shift @Median;
+			@median = sort{ $a<=>$b } @median;
+			$median_value = &Find_Median(@median);
+			my $print_loci = $aloci + $i - 1;
+			print OUT "$print_loci\t$median_value\n";
+			@median = ();
+			$Median[$len-1] = [];
 		}
 	}
 	my @quality = split '', $temp[10];
