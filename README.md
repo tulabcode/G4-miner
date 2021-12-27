@@ -38,19 +38,19 @@ Usage:
         perl G4-miner.pl [options]
 Options:
                 -i <file> <input bam/sam file>
+                -ir <file> <input reverse reads bam/sam file, just>
+                -if <file> <input forward reads bam/sam file>
+                         -i | -ir -if must exists one
                 -d <path> <the root directory for saving output>
                 -g <file> <the fasta file of the whole genome reference>
                 -rm <int> <rm the directory of $hdir/$samp, default: 1, yes>
-                -ch <string> <specify some specific chromosomes for analysing, 
-                             -ch chr1 -ch chr2 ... -ch chrX> <Optional, Default genome wide>
+                -ch <string> <specify some specific chromosomes for analysing, -ch chr1 -ch chr2 ... -ch chrX> <Optional, Default genome wide>
                 -py <file> <the absolute path of python2> (default: `which python2`)
                 -g4 <file> <the absolute path of g4predict> (default: `which g4predict`)
                 -rl <int> <the longest length of reads, default = 150 nt>
                 -dl <int> <the length of detection region, defalut = 75 nt>
-                -sp <float> <Specie for selecting cutoff of G ratio, here have six species:
-                             human/mouse/fruitfly/thaliana/elegans/yeast,
-                             default: human with 0.28, if the specie did not include in this
-                             paper, can calculate by one more step>
+                -sp <float> <Specie for selecting cutoff of G ratio, here have six species: human/mouse/fruitfly/thaliana/elegans/yeast,
+                             default: human with 0.28, if the specie did not include in this paper, can calculate by one more step>
                 -n <string> <the name of the sample>
 ```
 
