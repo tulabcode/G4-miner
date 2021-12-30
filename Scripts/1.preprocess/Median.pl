@@ -152,7 +152,7 @@ sub Out_Queue
 	for(my $j = 0; $j <= $n - 1 ; $j ++)
 	{	
 		#print "$median_temp->[$j]\t"; ## @$median_temp[$j]
-		last if(!$median_temp->[$j]);
+		last if(!(defined $median_temp->[$j]));
 		push(@out, $median_temp->[$j]);
 	}
 	#print "$n\n";
@@ -168,13 +168,14 @@ while(<IN>)
 	chomp;
 	my @temp = split /\t/, $_;
 	next if($temp[2] ne $chr);
+	next if($temp[2] =~ /S|H/);
 	$gap = $temp[3] - $aloci;
 	if($aloci != 0 and $gap != 0)
 	{
 		#progress of median finding
 		for(my $i = 1; $i <= $gap; $i ++)
 		{
-			if($Median[0]->[0]){
+			if(defined $Median[0]->[0]){
 				@median = &Out_Queue(@Median);
 				shift @Median;
 				@median = sort{ $a<=>$b } @median;
@@ -190,7 +191,7 @@ while(<IN>)
 				$Median[$len-1] = [];
 			}
 
-			last if(!$Median[0]->[0]);
+			last if(!(defined $Median[0]->[0]));
 		}
 	}
 	my @quality = split '', $temp[10];
