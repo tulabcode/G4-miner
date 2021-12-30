@@ -206,9 +206,6 @@ if(!(-e "$fai"))
 if($clean)
 {
 	print $red,"## Generate reverse and forward reads and save into dirrerent file$end\n";
-	$cmd = "perl $scriptpath/ForRev.pl -i $in -f $fai -or $inr -of $inf";
-	print "\nNOTICE: Running with system command <$cmd>\n";
-	system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 
 	if(!(defined $inr)){
 		$inr = "$odir/$samp.r.sort.bam";
@@ -216,6 +213,11 @@ if($clean)
 	if(!(defined $inf)){
 		$inf = "$odir/$samp.f.sort.bam";
 	}
+
+
+	$cmd = "perl $scriptpath/ForRev.pl -i $in -f $fai -or $inr -of $inf";
+	print "\nNOTICE: Running with system command <$cmd>\n";
+	system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 }
 
 for my $chr(@chrs)
