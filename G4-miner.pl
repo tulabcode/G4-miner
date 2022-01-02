@@ -214,6 +214,7 @@ if($clean)
 		$inf = "$odir/$samp.f.sort.bam";
 	}
 
+	die $red,"the suffix of $inr and $inf must be .bam\n" if($inr !~ /\.bam$/ || $inf !~ /\.bam$/);
 
 	$cmd = "perl $scriptpath/ForRev.pl -i $in -f $fai -or $inr -of $inf";
 	print "\nNOTICE: Running with system command <$cmd>\n";
