@@ -21,6 +21,7 @@ Required:
 3. perl,  recommended version 5.18.2 or higher
 4. It is recommended to install in advance three perl moudles: Getopt::Long, File::Basename, File::Spec.
 5. python2,  recommended version 2.7.16
+5. must install samtools (>= 1.11) and sambamba (>= 0.8.0)
 
 
 ## Running G4-miner for predictting

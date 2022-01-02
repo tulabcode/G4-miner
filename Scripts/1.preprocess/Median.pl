@@ -168,7 +168,7 @@ while(<IN>)
 	chomp;
 	my @temp = split /\t/, $_;
 	next if($temp[2] ne $chr);
-	next if($temp[2] =~ /S|H/);
+	next if($temp[5] =~ /S|H/);
 	$gap = $temp[3] - $aloci;
 	if($aloci != 0 and $gap != 0)
 	{
