@@ -39,7 +39,7 @@ if($in =~ /\.bam$/)
 	die "$red$in is not sorted bam file$end\n" if($head !~ /coordinate/);
 	my $bai=$in;
 	$bai=~s/\.bam/\.bai/g;
-	if( (!-e "${in}.bai") || (!-e "$bai") )
+	if( (!(-e "${in}.bai")) && (!(-e "$bai")) )
 	{
 		`samtools index -@ 20 $in`;
 	}
@@ -168,7 +168,7 @@ while(<IN>)
 	chomp;
 	my @temp = split /\t/, $_;
 	next if($temp[2] ne $chr);
-	next if($temp[5] =~ /S|H/);
+	next if($temp[5] =~ /S|H|D|I/);
 	$gap = $temp[3] - $aloci;
 	if($aloci != 0 and $gap != 0)
 	{
