@@ -145,6 +145,7 @@ if($algo == 1){
 		else
 		{
 			my @temp = split/\t/, $_;
+			next if($temp[5] =~ /H|S|D|I/);
 			my $flag = reverse sprintf("%b", $temp[1]);
 			my @biFlag = split //,$flag;
 			next unless(!$biFlag[2] && !$biFlag[11]);
@@ -181,26 +182,26 @@ else{
 	if($algo == 2){
 		if($in =~ /\.sam$/){
 			if($outf){
-				my $cmd = "$sambamba view -F \"(not reverse_strand) and (not unmapped) and (not supplementary)\" -f bam -l 9 -h -t 20 -S -o $outf $in";
+				my $cmd = "$sambamba view -F \"(not reverse_strand) and (not unmapped) and (not supplementary) and not (cigar =~ /D|H|S|I/)\" -f bam -l 9 -h -t 20 -S -o $outf $in";
 				print "\nNOTICE: Running with system command <$cmd>\n";
 				system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 			}
 
 			if($outr){
-				my $cmd = "$sambamba view -F \"reverse_strand and (not unmapped) and (not supplementary)\" -f bam -l 9 -h -t 20 -S -o $outr $in";
+				my $cmd = "$sambamba view -F \"reverse_strand and (not unmapped) and (not supplementary) and not (cigar =~ /D|H|S|I/)\" -f bam -l 9 -h -t 20 -S -o $outr $in";
 				print "\nNOTICE: Running with system command <$cmd>\n";
 				system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 			}
 		}
 		else{
 			if($outf){
-				my $cmd = "$sambamba view -F \"(not reverse_strand) and (not unmapped) and (not supplementary)\" -f bam -l 9 -h -t 20 -o $outf $in";
+				my $cmd = "$sambamba view -F \"(not reverse_strand) and (not unmapped) and (not supplementary) and not (cigar =~ /D|H|S|I/)\" -f bam -l 9 -h -t 20 -o $outf $in";
 				print "\nNOTICE: Running with system command <$cmd>\n";
 				system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 			}
 
 			if($outr){
-				my $cmd = "$sambamba view -F \"reverse_strand and (not unmapped) and (not supplementary)\" -f bam -l 9 -h -t 20 -o $outr $in";
+				my $cmd = "$sambamba view -F \"reverse_strand and (not unmapped) and (not supplementary) and not (cigar =~ /D|H|S|I/)\" -f bam -l 9 -h -t 20 -o $outr $in";
 				print "\nNOTICE: Running with system command <$cmd>\n";
 				system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 			}
@@ -209,26 +210,26 @@ else{
 	else{
 		if($in =~ /\.sam$/){
 			if($outf){
-				my $cmd = "$samtools view -h -@ 20 --write-index -F 4 -F 2048 -F 16 -o $outf $in";
+				my $cmd = "$samtools view -h -b -@ 20 --write-index -F 4 -F 2048 -F 16 -o $outf $in";
 				print "\nNOTICE: Running with system command <$cmd>\n";
 				system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 			}
 
 			if($outr){
-				my $cmd = "$samtools view -h -@ 20 --write-index -F 4 -F 2048 -f 16 -o $outr $in";
+				my $cmd = "$samtools view -h -b -@ 20 --write-index -F 4 -F 2048 -f 16 -o $outr $in";
 				print "\nNOTICE: Running with system command <$cmd>\n";
 				system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 			}
 		}
 		else{
 			if($outf){
-				my $cmd = "$samtools view -h -@ 20 --write-index -F 4 -F 2048 -F 16 -o $outf $in";
+				my $cmd = "$samtools view -h -b -@ 20 --write-index -F 4 -F 2048 -F 16 -o $outf $in";
 				print "\nNOTICE: Running with system command <$cmd>\n";
 				system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 			}
 
 			if($outr){
-				my $cmd = "$samtools view -h -@ 20 --write-index -F 4 -F 2048 -f 16 -o $outr $in";
+				my $cmd = "$samtools view -h -b -@ 20 --write-index -F 4 -F 2048 -f 16 -o $outr $in";
 				print "\nNOTICE: Running with system command <$cmd>\n";
 				system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 			}
