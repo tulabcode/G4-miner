@@ -145,11 +145,10 @@ while (<IF>)
 				{
 					`mkdir -p $odir/$chr` and die "${red}Error: can't create $odir/$chr$end\n";
 				}
-				if($clean)
-				{
-					open OUT, "> $odir/$chr/$out" || die $!;
-					print OUT "$_\n";
-				}
+				
+				open OUT, "> $odir/$chr/$out" || die $!;
+				print OUT "$_\n";
+
 			}
 			else
 			{
@@ -205,20 +204,50 @@ if(!(-e "$fai"))
 
 if($clean)
 {
-	print $red,"## Generate reverse and forward reads and save into dirrerent file$end\n";
+	if($in)
+	{
+		die $red,"$in does not exists$end\n" if(!(-e "$in"));
+		print $red,"## Generate reverse and forward reads and save into dirrerent file$end\n";
 
-	if(!(defined $inr)){
-		$inr = "$odir/$samp.r.sort.bam";
+		if(!(defined $inr)){
+			$inr = "$odir/$samp.r.sort.bam";
+		}
+		if(!(defined $inf)){
+			$inf = "$odir/$samp.f.sort.bam";
+		}
+
+		die $red,"the suffix of $inr and $inf must be .bam\n" if($inr !~ /\.bam$/ || $inf !~ /\.bam$/);
+
+		$cmd = "perl $scriptpath/ForRev.pl -i $in -f $fai -or $inr -of $inf";
+		print "\nNOTICE: Running with system command <$cmd>\n";
+		system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 	}
-	if(!(defined $inf)){
-		$inf = "$odir/$samp.f.sort.bam";
+	else
+	{
+		die $red,"$inr does not exists$end\n" if(!(-e "$inr"));
+		die $red,"$inf does not exists$end\n" if(!(-e "$inf"));
+
+		my $irb = "$inr".".bai";
+		my $ifb = "$inf".".bai";
+
+		if(!(-e "$irb"))
+		{
+			$cmd = "ln -s $inr $odir/$samp.r.sort.bam && samtools index -@ 20 $odir/$samp.r.sort.bam $odir/$samp.r.sort.bam.bai";
+			print "\nNOTICE: Running with system command <$cmd>\n";
+			system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
+			$inr = "$odir/$samp.r.sort.bam";
+			$irb = "$odir/$samp.r.sort.bam.bai";
+		}
+
+		if(!(-e "$ifb"))
+		{
+			$cmd = "ln -s $inf $odir/$samp.f.sort.bam && samtools index -@ 20 $odir/$samp.f.sort.bam $odir/$samp.f.sort.bam.bai";
+			print "\nNOTICE: Running with system command <$cmd>\n";
+			system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
+			$inf = "$odir/$samp.f.sort.bam";
+			$ifb = "$odir/$samp.f.sort.bam.bai";
+		}
 	}
-
-	die $red,"the suffix of $inr and $inf must be .bam\n" if($inr !~ /\.bam$/ || $inf !~ /\.bam$/);
-
-	$cmd = "perl $scriptpath/ForRev.pl -i $in -f $fai -or $inr -of $inf";
-	print "\nNOTICE: Running with system command <$cmd>\n";
-	system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 }
 
 for my $chr(@chrs)
@@ -375,8 +404,6 @@ sub PQ_Cratio
 
 my $tag_step = 0;
 
-#if($clean)
-#{
 for my $chr(@chrs)
 {	
 	$tag_step ++;
@@ -438,10 +465,7 @@ for my $chr(@chrs)
 	print "\nNOTICE: Running with system command <$cmd>\n";
 	system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 }
-#}
 
-#if($clean)
-#{
 for my $pre("false_positive_array", "positive_array", "negative_array")
 {
 	if(!@chrs)
@@ -471,7 +495,6 @@ for my $pre("false_positive_array", "positive_array", "negative_array")
 		system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 	}
 }
-#}
 
 my $gzr;
 my $gzf;

@@ -18,9 +18,9 @@ my $usage=<<INFO;
 Usage:
 	perl $0	[options]
 Options:
-	-1 <string> <PQ file>
-	-2 <string> <OQ file>
-	-o <string> <predicted G4 in OQ>
+	-1 <string> <${red}PQ file${end}>
+	-2 <string> <${red}OQ file${end}>
+	-o <string> <${red}predicted G4 in OQ${end}>
 INFO
 
 die $usage if ($help || !$in1 || !$in2 || !$out);
@@ -61,7 +61,7 @@ while(my $line1 = <IN1>)
 	for my $i(1..$#oqs)
 	{
 		next if !defined($oqs[$i]);
-		if(($pqs >= $oqs[$i] and $pqs <= $oqe[$i]) or ($pqe >= $oqs[$i] and $pqe <= $oqe[$i])){
+		if(($pqs >= $oqs[$i] and $pqs <= $oqe[$i]) or ($pqe >= $oqs[$i] and $pqe <= $oqe[$i]) or ($pqs >= $oqs[$i] and $pqe <= $oqe[$i]) ){
 			my $FrontDis = $pqs - $oqs[$i];
 			my $BackDis = $oqe[$i] - $pqe;
 			my $line1 = join("\t", $i, @temp1[0..1], $FrontDis, $BackDis, @temp1[2..5]);

@@ -47,7 +47,6 @@ while(my $line2 = <IN2>)
 	$oqs[$temp2[0]] = $temp2[1];
 	$oqe[$temp2[0]] = $temp2[2];
 }
-close IN2;
 
 open IN1,"< $in1" || die $!;
 while(my $line1 = <IN1>)
@@ -72,4 +71,5 @@ while(my $line1 = <IN1>)
 	}
 }
 close IN1;
+close IN2;
 close OUT;
