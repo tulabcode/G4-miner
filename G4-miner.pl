@@ -252,8 +252,9 @@ if($clean)
 
 for my $chr(@chrs)
 {
-	print $red,"## Predict G4 for each chromosome by using $G4Predict$end\n";
 	my $fa = "$odir/$chr/$chr.fa";
+	next if(-e "$odir/$chr/PQ_g4predict.bed");
+	print $red,"## Predict G4 for each chromosome by using $G4Predict$end\n";
 	$cmd = "$py2 $G4Predict intra -f $fa -b $odir/$chr/PQ_g4predict.bed -s -M";
 	print "\nNOTICE: Running with system command <$cmd>\n";
 	system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
@@ -409,61 +410,70 @@ for my $chr(@chrs)
 	$tag_step ++;
 	my $fa = "$odir/$chr/$chr.fa";
 	die $red,"$fa !exists\n" if(!(-e "$fa"));
-	$cmd = "perl $path1/PQ_g4predict_seq.pl -i $odir/$chr/PQ_g4predict.bed -f $fa -o PQ_g4predict";
-	print "\nNOTICE: Running with system command <$cmd>\n";
-	system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
+	if(! -e "$odir/$chr/PQ_g4predict_plus" && ! -e "$odir/$chr/PQ_g4predict_minus")
+	{
+		$cmd = "perl $path1/PQ_g4predict_seq.pl -i $odir/$chr/PQ_g4predict.bed -f $fa -o PQ_g4predict";
+		print "\nNOTICE: Running with system command <$cmd>\n";
+		system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
+	}
+	
+	if(! -e "$odir/$chr/Medianr.gz")
+	{
+		print $red,"## Count the median of the quality value of each base on $chr with $inr$end\n" if($tag_step == 1);
+		print $red,"## Start Analysis read mapped to reverse strand of genome$end\n" if($tag_step == 1);
+		$cmd = "perl $path1/Median.pl -i $inr -o $odir/$chr/Medianr.gz -l $read_length -ch $chr";
+		print "\nNOTICE: Running with system command <$cmd>\n";
+		system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 
-	print $red,"## Count the median of the quality value of each base on $chr with $inr$end\n" if($tag_step == 1);
-	print $red,"## Start Analysis read mapped to reverse strand of genome$end\n" if($tag_step == 1);
-	$cmd = "perl $path1/Median.pl -i $inr -o $odir/$chr/Medianr.gz -l $read_length -ch $chr";
-	print "\nNOTICE: Running with system command <$cmd>\n";
-	system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
+		$cmd = "perl $path2/Positive_region_median.pl -i $odir/$chr/PQ_g4predict_plus -m $odir/$chr/Medianr.gz -o $odir/$chr/positive_array_r -l $region_length";
+		print "\nNOTICE: Running with system command <$cmd>\n";
+		system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 
-	$cmd = "perl $path2/Positive_region_median.pl -i $odir/$chr/PQ_g4predict_plus -m $odir/$chr/Medianr.gz -o $odir/$chr/positive_array_r -l $region_length";
-	print "\nNOTICE: Running with system command <$cmd>\n";
-	system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
+		$cmd = "perl $path2/Negative_sloci.pl -i $odir/$chr/PQ_g4predict_plus -m $odir/$chr/Medianr.gz -o $odir/$chr/negative_sloci_r.gz -l $region_length";
+		print "\nNOTICE: Running with system command <$cmd>\n";
+		system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 
-	$cmd = "perl $path2/Negative_sloci.pl -i $odir/$chr/PQ_g4predict_plus -m $odir/$chr/Medianr.gz -o $odir/$chr/negative_sloci_r.gz -l $region_length";
-	print "\nNOTICE: Running with system command <$cmd>\n";
-	system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
+		$cmd = "perl $path2/Negative_seq_filter.pl -i $odir/$chr/negative_sloci_r.gz -f $fa -o $odir/$chr/false_positive_sloci_r.gz -c $g";
+		print "\nNOTICE: Running with system command <$cmd>\n";
+		system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 
-	$cmd = "perl $path2/Negative_seq_filter.pl -i $odir/$chr/negative_sloci_r.gz -f $fa -o $odir/$chr/false_positive_sloci_r.gz -c $g";
-	print "\nNOTICE: Running with system command <$cmd>\n";
-	system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
+		$cmd = "perl $path2/Negative_count.pl -i $odir/$chr/negative_sloci_r.gz -m $odir/$chr/Medianr.gz -o $odir/$chr/negative_array_r -l $region_length";
+		print "\nNOTICE: Running with system command <$cmd>\n";
+		system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 
-	$cmd = "perl $path2/Negative_count.pl -i $odir/$chr/negative_sloci_r.gz -m $odir/$chr/Medianr.gz -o $odir/$chr/negative_array_r -l $region_length";
-	print "\nNOTICE: Running with system command <$cmd>\n";
-	system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
+		$cmd = "perl $path2/Negative_count.pl -i $odir/$chr/false_positive_sloci_r.gz -m $odir/$chr/Medianr.gz -o $odir/$chr/false_positive_array_r -l $region_length";
+		print "\nNOTICE: Running with system command <$cmd>\n";
+		system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
+	}
 
-	$cmd = "perl $path2/Negative_count.pl -i $odir/$chr/false_positive_sloci_r.gz -m $odir/$chr/Medianr.gz -o $odir/$chr/false_positive_array_r -l $region_length";
-	print "\nNOTICE: Running with system command <$cmd>\n";
-	system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
+	if(! -e "$odir/$chr/Medianf.gz")
+	{
+		print $red,"## Count the median of the quality value of each base on $chr with $inf$end\n" if($tag_step == 1);
+		print $red,"## Start Analysis read mapped to forward strand of genome$end\n" if($tag_step == 1);
+		$cmd = "perl $path1/Median.pl -i $inf -o $odir/$chr/Medianf.gz -l $read_length -ch $chr";
+		print "\nNOTICE: Running with system command <$cmd>\n";
+		system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 
-	print $red,"## Count the median of the quality value of each base on $chr with $inf$end\n" if($tag_step == 1);
-	print $red,"## Start Analysis read mapped to forward strand of genome$end\n" if($tag_step == 1);
-	$cmd = "perl $path1/Median.pl -i $inf -o $odir/$chr/Medianf.gz -l $read_length -ch $chr";
-	print "\nNOTICE: Running with system command <$cmd>\n";
-	system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
+		$cmd = "perl $path3/Positive_region_median.pl -i $odir/$chr/PQ_g4predict_minus -m $odir/$chr/Medianf.gz -o $odir/$chr/positive_array_f -l $region_length";
+		print "\nNOTICE: Running with system command <$cmd>\n";
+		system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 
-	$cmd = "perl $path3/Positive_region_median.pl -i $odir/$chr/PQ_g4predict_minus -m $odir/$chr/Medianf.gz -o $odir/$chr/positive_array_f -l $region_length";
-	print "\nNOTICE: Running with system command <$cmd>\n";
-	system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
+		$cmd = "perl $path3/Negative_sloci.pl -i $odir/$chr/PQ_g4predict_minus -m $odir/$chr/Medianf.gz -o $odir/$chr/negative_sloci_f.gz -l $region_length";
+		print "\nNOTICE: Running with system command <$cmd>\n";
+		system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 
-	$cmd = "perl $path3/Negative_sloci.pl -i $odir/$chr/PQ_g4predict_minus -m $odir/$chr/Medianf.gz -o $odir/$chr/negative_sloci_f.gz -l $region_length";
-	print "\nNOTICE: Running with system command <$cmd>\n";
-	system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
+		$cmd = "perl $path3/Negative_seq_filter.pl -i $odir/$chr/negative_sloci_f.gz -f $fa -o $odir/$chr/false_positive_sloci_f.gz -c $c -l $region_length";
+		print "\nNOTICE: Running with system command <$cmd>\n";
+		system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 
-	$cmd = "perl $path3/Negative_seq_filter.pl -i $odir/$chr/negative_sloci_f.gz -f $fa -o $odir/$chr/false_positive_sloci_f.gz -c $c -l $region_length";
-	print "\nNOTICE: Running with system command <$cmd>\n";
-	system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
+		$cmd = "perl $path3/Negative_count.pl -i $odir/$chr/negative_sloci_f.gz -m $odir/$chr/Medianf.gz -o $odir/$chr/negative_array_f -l $region_length";
+		print "\nNOTICE: Running with system command <$cmd>\n";
+		system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 
-	$cmd = "perl $path3/Negative_count.pl -i $odir/$chr/negative_sloci_f.gz -m $odir/$chr/Medianf.gz -o $odir/$chr/negative_array_f -l $region_length";
-	print "\nNOTICE: Running with system command <$cmd>\n";
-	system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
-
-	$cmd = "perl $path3/Negative_count.pl -i $odir/$chr/false_positive_sloci_f.gz -m $odir/$chr/Medianf.gz -o $odir/$chr/false_positive_array_f -l $region_length";
-	print "\nNOTICE: Running with system command <$cmd>\n";
-	system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
+		$cmd = "perl $path3/Negative_count.pl -i $odir/$chr/false_positive_sloci_f.gz -m $odir/$chr/Medianf.gz -o $odir/$chr/false_positive_array_f -l $region_length";
+		print "\nNOTICE: Running with system command <$cmd>\n";
+		system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
+	}
 }
 
 for my $pre("false_positive_array", "positive_array", "negative_array")
