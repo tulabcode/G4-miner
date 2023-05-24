@@ -578,18 +578,31 @@ sub CoutArry
 	my @array;
 
 	open IN,"$file" || die "cannot open this file!\n";
+	open OUT,"> ${file}_rate" || die "cannot open this file!\n";
 	my $row = 1;
 	while(<IN>)
 	{
 		chomp;
 		my @temp = split/\s+/, $_;
+		my $line = "";
 		for my $j (0..$#temp)
 		{
 			$array[$row]->[$j+1] = $temp[$j]/$lc;
+			if(!$line)
+			{
+				$line .= "$array[$row]->[$j+1]";
+			}
+			else
+			{
+				$line .= "\t$array[$row]->[$j+1]";
+			}
 		}
+		print OUT "$line\n";
+		$line = "";
 		$row ++;
 	}
 	close IN;
+	close OUT;
 
 	return @array;
 }
