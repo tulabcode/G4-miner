@@ -539,14 +539,14 @@ my @plf = &CoutArry($lcpqf, "$odir/positive_array_f");
 
 my ($mr, $nr, $maxr) = &MaxMN(\@fplr, \@plr);
 
-print "the number of reverse M is $mr\n";
-print "the number of reverse N is $nr\n";
+print "the quality number of reverse M is $mr\n";
+print "the base number of reverse N is $nr\n";
 print "the number of reverse false positive rate is $maxr\n";
 
 my ($mf, $nf, $maxf) = &MaxMN(\@fplf, \@plf);
 
-print "the number of forward M is $mf\n";
-print "the number of forward N is $nf\n";
+print "the quality number of forward M is $mf\n";
+print "the base number of forward N is $nf\n";
 print "the number of forward false positive rate is $maxf\n";
 
 sub MaxMN
@@ -571,6 +571,7 @@ sub MaxMN
 		{
 			if($pl->[$i]->[$j] > $max)
 			{
+				next unless($i > $j);
 				$mx = $j;
 				$nx = $i;
 				$max = $pl->[$i]->[$j];
