@@ -538,7 +538,16 @@ my @plr = &CoutArry($lcpqr, "$odir/positive_array_r");
 my @plf = &CoutArry($lcpqf, "$odir/positive_array_f");
 
 my ($mr, $nr, $maxr) = &MaxMN(\@fplr, \@plr);
+
+print "the number of reverse M is $mr\n";
+print "the number of reverse N is $nr\n";
+print "the number of reverse false positive rate is $maxr\n";
+
 my ($mf, $nf, $maxf) = &MaxMN(\@fplf, \@plf);
+
+print "the number of forward M is $mf\n";
+print "the number of forward N is $nf\n";
+print "the number of forward false positive rate is $maxf\n";
 
 sub MaxMN
 {
@@ -607,43 +616,57 @@ sub CoutArry
 	return @array;
 }
 
+open OSH, "> $odir/runfollowstep.sh" || die $!;
+
 for my $chr(@chrs)
 {
 	my $fa = "$odir/$chr/$chr.fa";
 	my $dir = "$odir/$chr";
 	$cmd = "perl $path2/PeaksExtract.pl -i $dir/Medianr.gz -f $fa -c $mr -q $nr -o $dir/OQ_r.gz";
-	print "\nNOTICE: Running with system command <$cmd>\n";
-	system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
+	print OSH "\necho NOTICE: Running with system command <$cmd>\n";
+	print OSH "$cmd\n";
+	#system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 
 	$cmd = "perl $path2/G_ratio_cutoff.pl -i $dir/OQ_r.gz -c $g -o $dir/G4_OQ_unmerged_r";
-	print "\nNOTICE: Running with system command <$cmd>\n";
-	system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
+	print OSH "\necho NOTICE: Running with system command <$cmd>\n";
+	print OSH "$cmd\n";
+	#system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 
 	$cmd = "perl $path2/merge.pl -i $dir/G4_OQ_unmerged_r -f $fa -o $dir/G4_OQ_merged_r";
-	print "\nNOTICE: Running with system command <$cmd>\n";
-	system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
+	print OSH "\necho NOTICE: Running with system command <$cmd>\n";
+	print OSH "$cmd\n";
+	#system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 
 	$cmd = "perl $path2/PQ_in_OQ_g4predict.pl -1 $dir/PQ_g4predict_plus -2 $dir/G4_OQ_merged_r -o $dir/G4_PQinOQ_r";
-	print "\nNOTICE: Running with system command <$cmd>\n";
-	system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
+	print OSH "\necho NOTICE: Running with system command <$cmd>\n";
+	print OSH "$cmd\n";
+	#system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 
 	$cmd = "perl $path3/PeaksExtract.pl -i $dir/Medianf.gz -f $fa -c $mf -q $nf -o $dir/OQ_f.gz";
-	print "\nNOTICE: Running with system command <$cmd>\n";
-	system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
+	print OSH "\necho NOTICE: Running with system command <$cmd>\n";
+	print OSH "$cmd\n";
+	#system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 
 	$cmd = "perl $path3/C_ratio_cutoff.pl -i $dir/OQ_f.gz -c $c -o $dir/G4_OQ_unmerged_f";
-	print "\nNOTICE: Running with system command <$cmd>\n";
-	system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
+	print OSH "\necho NOTICE: Running with system command <$cmd>\n";
+	print OSH "$cmd\n";
+	#system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 
 	$cmd = "perl $path3/merge.pl -i $dir/G4_OQ_unmerged_f -f $fa -o $dir/G4_OQ_merged_f";
-	print "\nNOTICE: Running with system command <$cmd>\n";
-	system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
+	print OSH "\necho NOTICE: Running with system command <$cmd>\n";
+	print OSH "$cmd\n";
+	#system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 
 	$cmd = "perl $path3/PQ_in_OQ_g4predict.pl -1 $dir/PQ_g4predict_minus -2 $dir/G4_OQ_merged_f -o $dir/G4_PQinOQ_f";
-	print "\nNOTICE: Running with system command <$cmd>\n";
-	system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
+	print OSH "\necho NOTICE: Running with system command <$cmd>\n";
+	print OSH "$cmd\n";
+	#system ($cmd) and die $red,"Error running system command: <$cmd>$end\n";
 }
 
-print $red."Finished $samp G4-miner$end\n";
+print OSH "echo Finished $samp G4-miner$end\n";
+close OSH;
+`chmod +x $odir/runfollowstep.sh`;
+
+print $red."Just check the M and N with the 3 matrixs false_positive_array, positive_array and negative_array\n";
 
 exit 0;
